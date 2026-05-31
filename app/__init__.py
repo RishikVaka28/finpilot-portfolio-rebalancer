@@ -1,0 +1,2 @@
+"""FinPilot application package."""
+

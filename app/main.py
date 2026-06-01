@@ -51,6 +51,14 @@ def create_app() -> FastAPI:
     def health_check() -> dict[str, str]:
         return {"status": "ok"}
 
+    @app.get("/metadata", tags=["Health"])
+    def metadata() -> dict[str, str]:
+        return {
+            "name": settings.PROJECT_NAME,
+            "version": settings.VERSION,
+            "docs_url": "/docs",
+        }
+
     return app
 
 

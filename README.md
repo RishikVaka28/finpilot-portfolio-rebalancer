@@ -23,6 +23,7 @@ This structure keeps route handlers thin, makes ownership checks explicit, and k
 - Authenticated portfolio CRUD
 - Holdings CRUD scoped to portfolio ownership
 - Target allocation CRUD scoped to portfolio ownership
+- Portfolio summary snapshots with total value and current allocation
 - Rebalance recommendations with buy/sell/hold actions
 - PostgreSQL-ready schema with Alembic migrations
 - Docker Compose local environment

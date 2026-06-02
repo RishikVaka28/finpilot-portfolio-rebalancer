@@ -1,14 +1,20 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
 from app.api.deps import get_current_user
 from app.db.session import get_db
 from app.models.portfolio import Portfolio
 from app.models.user import User
-from app.schemas.portfolio import PortfolioCreate, PortfolioRead, PortfolioUpdate
+from app.schemas.portfolio import (
+    PortfolioCreate,
+    PortfolioRead,
+    PortfolioSummary,
+    PortfolioUpdate,
+)
 from app.services.portfolio_access import get_owned_portfolio
+from app.services.portfolio_summary import build_portfolio_summary
 
 router = APIRouter()
 
@@ -47,6 +53,22 @@ def get_portfolio(
     return get_owned_portfolio(db, portfolio_id, current_user)
 
 
+@router.get("/{portfolio_id}/summary", response_model=PortfolioSummary)
+def get_portfolio_summary(
+    portfolio_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> PortfolioSummary:
+    portfolio = get_owned_portfolio(db, portfolio_id, current_user)
+    portfolio = (
+        db.query(Portfolio)
+        .options(selectinload(Portfolio.holdings))
+        .filter(Portfolio.id == portfolio.id)
+        .one()
+    )
+    return build_portfolio_summary(portfolio)
+
+
 @router.put("/{portfolio_id}", response_model=PortfolioRead)
 def update_portfolio(
     portfolio_id: int,
@@ -74,4 +96,3 @@ def delete_portfolio(
     portfolio = get_owned_portfolio(db, portfolio_id, current_user)
     db.delete(portfolio)
     db.commit()
-

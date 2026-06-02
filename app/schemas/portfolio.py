@@ -1,4 +1,5 @@
 from datetime import datetime
+from decimal import Decimal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -19,3 +20,16 @@ class PortfolioRead(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
+
+class PortfolioAllocation(BaseModel):
+    symbol: str
+    market_value: Decimal
+    current_percent: Decimal
+
+
+class PortfolioSummary(BaseModel):
+    portfolio_id: int
+    portfolio_name: str
+    total_value: Decimal
+    holdings_count: int
+    allocations: list[PortfolioAllocation]

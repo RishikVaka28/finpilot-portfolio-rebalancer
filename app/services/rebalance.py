@@ -49,6 +49,8 @@ def calculate_rebalance(portfolio: Portfolio) -> RebalanceResponse:
         )
 
     recommendations: list[RebalanceRecommendation] = []
+    total_buy_value = Decimal("0")
+    total_sell_value = Decimal("0")
     for symbol in sorted(set(holdings_by_symbol) | set(targets_by_symbol)):
         holding = holdings_by_symbol.get(symbol)
         current_value = (
@@ -56,13 +58,16 @@ def calculate_rebalance(portfolio: Portfolio) -> RebalanceResponse:
         )
         target_percent = targets_by_symbol.get(symbol, Decimal("0"))
         current_percent = current_value / total_value * Decimal("100")
+        drift_percent = current_percent - target_percent
         target_value = total_value * target_percent / Decimal("100")
         difference_value = target_value - current_value
 
         if difference_value > Decimal("0.005"):
             action = "BUY"
+            total_buy_value += difference_value
         elif difference_value < Decimal("-0.005"):
             action = "SELL"
+            total_sell_value += abs(difference_value)
         else:
             action = "HOLD"
 
@@ -72,6 +77,7 @@ def calculate_rebalance(portfolio: Portfolio) -> RebalanceResponse:
                 current_value=_money(current_value),
                 current_percent=_percent(current_percent),
                 target_percent=_percent(target_percent),
+                drift_percent=_percent(drift_percent),
                 target_value=_money(target_value),
                 difference_value=_money(difference_value),
                 action=action,
@@ -81,5 +87,8 @@ def calculate_rebalance(portfolio: Portfolio) -> RebalanceResponse:
     return RebalanceResponse(
         portfolio_id=portfolio.id,
         total_value=_money(total_value),
+        total_buy_value=_money(total_buy_value),
+        total_sell_value=_money(total_sell_value),
+        is_balanced=all(item.action == "HOLD" for item in recommendations),
         recommendations=recommendations,
     )

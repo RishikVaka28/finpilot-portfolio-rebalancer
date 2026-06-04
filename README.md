@@ -24,7 +24,7 @@ This structure keeps route handlers thin, makes ownership checks explicit, and k
 - Holdings CRUD scoped to portfolio ownership
 - Target allocation CRUD scoped to portfolio ownership
 - Portfolio summary snapshots with total value and current allocation
-- Rebalance recommendations with buy/sell/hold actions
+- Rebalance recommendations with allocation drift, trade totals, and buy/sell/hold actions
 - PostgreSQL-ready schema with Alembic migrations
 - Docker Compose local environment
 - Pytest suite using an isolated SQLite test database
@@ -128,8 +128,10 @@ The engine calculates:
 
 - total portfolio market value
 - current allocation per symbol
+- allocation drift from each target
 - target value per symbol
 - dollar delta required to reach the target
+- total buy and sell values
 - action: `BUY`, `SELL`, or `HOLD`
 
 Targets must sum to exactly `100`. Symbols that appear only in targets are treated as new positions to buy, and symbols that appear only in holdings are treated as positions with a zero target.
